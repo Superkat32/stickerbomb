@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "${modId}",
+	"version": "${version}",
+	"name": "${modName}",
+	"description": "${modDescription}",
+	"authors": [
+		"${authors}"
+	],
+	"contributors": [
+		"${contributors}"
+	],
+	"contact": {
+		"homepage": "${homepage}",
+		"issues": "${issues}",
+		"sources": "${sources}"
+	},
+	"license": "${license}",
+	"icon": "assets/stickerbomb/icon.png",
+	"mixins": [
+		"stickerbomb.mixins.json"
+	],
+	"depends": {
+		"minecraft": ">=${mc}",
+		"fabricloader": ">=${fl}",
+		"fabric-api": ">=${fapi}"
+	},
+	"suggests": {
+	},
+	"entrypoints": {
+		"main": [
+			"im.f24.stickerbomb.StickerBombMod"
+		],
+		"client": [
+			"im.f24.stickerbomb.StickerBombClientMod"
+		]
+	}
+}
