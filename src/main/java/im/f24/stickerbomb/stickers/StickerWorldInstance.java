@@ -5,13 +5,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Uuids;
 import net.minecraft.util.math.*;
+
+import java.util.UUID;
 
 /// Represents an in-world sticker.
 public class StickerWorldInstance {
 	public static final Codec<StickerWorldInstance> CODEC = RecordCodecBuilder.create(
 		(instance) ->
 			instance.group(
+				Uuids.INT_STREAM_CODEC.fieldOf("sticker_id").forGetter(s -> s.id),
 				Identifier.CODEC.fieldOf("texture_id").forGetter(s -> s.stickerTextureId),
 				Vec3d.CODEC.fieldOf("position").forGetter(s -> s.position),
 				Codec.FLOAT.fieldOf("rotation").forGetter(s -> s.rotation),
@@ -19,10 +23,11 @@ public class StickerWorldInstance {
 			).apply(instance, StickerWorldInstance::new)
 	);
 
-	public static final PacketCodec<ByteBuf, StickerWorldInstance> PACKET_CODEC = new PacketCodec<ByteBuf, StickerWorldInstance>() {
+	public static final PacketCodec<ByteBuf, StickerWorldInstance> PACKET_CODEC = new PacketCodec<>() {
 		@Override
 		public StickerWorldInstance decode(ByteBuf buf) {
 			return new StickerWorldInstance(
+				Uuids.PACKET_CODEC.decode(buf),
 				Identifier.PACKET_CODEC.decode(buf),
 				Vec3d.PACKET_CODEC.decode(buf),
 				buf.readFloat(),
@@ -32,6 +37,7 @@ public class StickerWorldInstance {
 
 		@Override
 		public void encode(ByteBuf buf, StickerWorldInstance value) {
+			Uuids.PACKET_CODEC.encode(buf, value.id);
 			Identifier.PACKET_CODEC.encode(buf, value.stickerTextureId);
 			Vec3d.PACKET_CODEC.encode(buf, value.position);
 			buf.writeFloat(value.rotation);
@@ -39,6 +45,7 @@ public class StickerWorldInstance {
 		}
 	};
 
+	public UUID id;
 	public Identifier stickerTextureId;
 	public Vec3d position;
 	public float rotation;
@@ -48,6 +55,7 @@ public class StickerWorldInstance {
 	public Box stickerBox;
 
 	public StickerWorldInstance(Identifier stickerTextureId) {
+		this.id = UUID.randomUUID();
 		this.stickerTextureId = stickerTextureId;
 		rotation = 0;
 		side = Direction.NORTH;
@@ -55,7 +63,8 @@ public class StickerWorldInstance {
 		setPosition(Vec3d.ZERO);
 	}
 
-	private StickerWorldInstance(Identifier stickerTextureId, Vec3d position, float rotation, Direction side) {
+	private StickerWorldInstance(UUID id, Identifier stickerTextureId, Vec3d position, float rotation, Direction side) {
+		this.id = id;
 		this.stickerTextureId = stickerTextureId;
 		this.rotation = rotation;
 		this.side = side;

@@ -6,17 +6,15 @@ import im.f24.stickerbomb.stickers.StickerWorldManager;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.chunk.ChunkBuilder;
-import net.minecraft.client.texture.SpriteAtlasHolder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Colors;
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
 public class StickerRenderer {
 	private static final ArrayList<StickerWorldInstance> STICKER_CACHE = new ArrayList<>();
@@ -59,12 +57,11 @@ public class StickerRenderer {
 			var side = sticker.side;
 
 			stack.translate(sticker.position.subtract(camera.getPos()));
-			stack.translate(0.5f, 0.5f, 0.5f);
+			//stack.translate(0.5f, 0.5f, 0.5f);
 			stack.multiply(side.getRotationQuaternion());
 
 			var stickerSurfaceBlockPos = sticker.blockPos.offset(side);
 
-			var matrix = stack.peek().getPositionMatrix();
 			var light = LightmapTextureManager.pack(
 				world.getLightLevel(LightType.BLOCK, stickerSurfaceBlockPos),
 				world.getLightLevel(LightType.SKY, stickerSurfaceBlockPos)
@@ -73,20 +70,24 @@ public class StickerRenderer {
 			var sprite = StickerAtlasHolder.INSTANCE.getSticker(sticker.stickerTextureId);
 			var spriteConsumer = sprite.getTextureSpecificVertexConsumer(consumer);
 
-			vertex(spriteConsumer, matrix, -0.5f, 0.501f, 0.5f, 0.0F, 1.0F, light);
-			vertex(spriteConsumer, matrix, 0.5f, 0.501f, 0.5f, 1.0F, 1.0F, light);
-			vertex(spriteConsumer, matrix, 0.5f, 0.501f, -0.5f, 1.0F, 0.0F, light);
-			vertex(spriteConsumer, matrix, -0.5f, 0.501f, -0.5f, 0.0F, 0.0F, light);
-			
+			renderSticker(spriteConsumer, stack, light);
+
 			stack.pop();
 		}
 	}
 
-	private static void vertex(VertexConsumer consumer, Matrix4f positionMatrix, float x, float y, float z, float u, float v, int light) {
-		consumer.vertex(positionMatrix, x, y, z);
+	public static void renderSticker(VertexConsumer consumer, MatrixStack stack, int light) {
+		vertex(consumer, stack, -0.5f, 0.501f, 0.5f, 0.0F, 1.0F, light);
+		vertex(consumer, stack, 0.5f, 0.501f, 0.5f, 1.0F, 1.0F, light);
+		vertex(consumer, stack, 0.5f, 0.501f, -0.5f, 1.0F, 0.0F, light);
+		vertex(consumer, stack, -0.5f, 0.501f, -0.5f, 0.0F, 0.0F, light);
+	}
+
+	private static void vertex(VertexConsumer consumer, MatrixStack stack, float x, float y, float z, float u, float v, int light) {
+		consumer.vertex(stack.peek().getPositionMatrix(), x, y, z);
 		consumer.color(Colors.WHITE);
 		consumer.texture(u, v);
-		consumer.normal(0.0F, 1.0F, 0.0F);
+		consumer.normal(stack.peek(), 0.0F, 1.0F, 0.0F);
 		consumer.light(light);
 		consumer.overlay(OverlayTexture.DEFAULT_UV);
 	}

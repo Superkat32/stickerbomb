@@ -33,6 +33,14 @@
 		],
 		"client": [
 			"im.f24.stickerbomb.StickerBombClientMod"
+		],
+		"cardinal-components": [
+			"im.f24.stickerbomb.stickers.components.StickerChunkComponentInitializer"
+		]
+	},
+	"custom": {
+		"cardinal-components": [
+			"stickerbomb:sticker_chunk_data"
 		]
 	}
 }
