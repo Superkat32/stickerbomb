@@ -29,4 +29,14 @@ public class StickerAtlasHolder extends SpriteAtlasHolder {
 	public Sprite getSticker(Identifier id) {
 		return getSprite(id);
 	}
+
+
+	public float getScaleForStickerSprite(Identifier id) {
+		return getScaleForStickerSprite(getSticker(id));
+	}
+
+	public float getScaleForStickerSprite(Sprite sprite) {
+		var max = Math.max(sprite.getContents().getWidth(), sprite.getContents().getHeight());
+		return (float) max / StickerBombMod.STICKER_PIXELS_PER_BLOCK;
+	}
 }

@@ -19,6 +19,7 @@ public class StickerWorldInstance {
 				Identifier.CODEC.fieldOf("texture_id").forGetter(s -> s.stickerTextureId),
 				Vec3d.CODEC.fieldOf("position").forGetter(s -> s.position),
 				Codec.FLOAT.fieldOf("rotation").forGetter(s -> s.rotation),
+				Codec.FLOAT.fieldOf("scale").forGetter(s -> s.scale),
 				Direction.CODEC.fieldOf("side").forGetter(s -> s.side)
 			).apply(instance, StickerWorldInstance::new)
 	);
@@ -31,6 +32,7 @@ public class StickerWorldInstance {
 				Identifier.PACKET_CODEC.decode(buf),
 				Vec3d.PACKET_CODEC.decode(buf),
 				buf.readFloat(),
+				buf.readFloat(),
 				Direction.PACKET_CODEC.decode(buf)
 			);
 		}
@@ -41,6 +43,7 @@ public class StickerWorldInstance {
 			Identifier.PACKET_CODEC.encode(buf, value.stickerTextureId);
 			Vec3d.PACKET_CODEC.encode(buf, value.position);
 			buf.writeFloat(value.rotation);
+			buf.writeFloat(value.scale);
 			Direction.PACKET_CODEC.encode(buf, value.side);
 		}
 	};
@@ -49,6 +52,7 @@ public class StickerWorldInstance {
 	public Identifier stickerTextureId;
 	public Vec3d position;
 	public float rotation;
+	public float scale;
 	public Direction side;
 
 	public BlockPos blockPos;
@@ -58,15 +62,17 @@ public class StickerWorldInstance {
 		this.id = UUID.randomUUID();
 		this.stickerTextureId = stickerTextureId;
 		rotation = 0;
+		scale = 1;
 		side = Direction.NORTH;
 
 		setPosition(Vec3d.ZERO);
 	}
 
-	private StickerWorldInstance(UUID id, Identifier stickerTextureId, Vec3d position, float rotation, Direction side) {
+	private StickerWorldInstance(UUID id, Identifier stickerTextureId, Vec3d position, float rotation, float scale, Direction side) {
 		this.id = id;
 		this.stickerTextureId = stickerTextureId;
 		this.rotation = rotation;
+		this.scale = scale;
 		this.side = side;
 
 		setPosition(position);

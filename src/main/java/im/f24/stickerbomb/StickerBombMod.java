@@ -3,12 +3,7 @@ package im.f24.stickerbomb;
 import im.f24.stickerbomb.items.StickerItem;
 import im.f24.stickerbomb.items.StickerScraper;
 import im.f24.stickerbomb.stickers.components.StickerChunkComponent;
-import im.f24.stickerbomb.stickers.StickerWorldManager;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -27,6 +22,8 @@ public class StickerBombMod implements ModInitializer {
 	public static final String ID = "stickerbomb";
 	public static final Logger LOGGER = LoggerFactory.getLogger(ID);
 
+	public static final int STICKER_PIXELS_PER_BLOCK = 32;
+
 	public static final Identifier STICKER_ITEM_ID = Identifier.of(ID, "sticker");
 	public static Item STICKER_ITEM;
 
@@ -43,6 +40,8 @@ public class StickerBombMod implements ModInitializer {
 		Identifier.of(ID, "sticker_chunk_data"),
 		StickerChunkComponent.class
 	);
+
+
 
 	@Override
 	public void onInitialize() {

@@ -74,26 +74,24 @@ public class StickerRenderer {
 				var stickerID = item.get(StickerBombMod.STICKER_ID);
 				var sprite = StickerAtlasHolder.INSTANCE.getSticker(stickerID);
 				var spriteConsumer = sprite.getTextureSpecificVertexConsumer(consumer);
+				var scale = StickerAtlasHolder.INSTANCE.getScaleForStickerSprite(sprite);
 
-				setupStickerRenderState(pos.subtract(camera.getPos()), blockHitResult.getSide(), stack, rotation);
+
+				setupStickerRenderState(pos.subtract(camera.getPos()), blockHitResult.getSide(), stack, rotation, scale);
 				renderStickerQuad(spriteConsumer, stack, LightmapTextureManager.MAX_LIGHT_COORDINATE);
 				stack.pop();
 			}
 		}
 
 		// Render stickers!
-
-		{
-			for (StickerWorldInstance sticker : STICKER_CACHE) {
-				renderSticker(sticker, camera, world, stack, consumer);
-			}
+		for (StickerWorldInstance sticker : STICKER_CACHE) {
+			renderSticker(sticker, camera, world, stack, consumer);
 		}
 	}
 
 	public static void renderSticker(StickerWorldInstance sticker, Camera camera, World world, MatrixStack stack, VertexConsumer consumer) {
 		stack.push();
 
-		setupStickerRenderState(sticker.position.subtract(camera.getPos()), sticker.side, stack, sticker.rotation);
 
 		var stickerSurfaceBlockPos = sticker.blockPos.offset(sticker.side);
 		var light = LightmapTextureManager.pack(
@@ -104,17 +102,24 @@ public class StickerRenderer {
 		var sprite = StickerAtlasHolder.INSTANCE.getSticker(sticker.stickerTextureId);
 		var spriteConsumer = sprite.getTextureSpecificVertexConsumer(consumer);
 
+		setupStickerRenderState(sticker.position.subtract(camera.getPos()), sticker.side, stack, sticker.rotation, StickerAtlasHolder.INSTANCE.getScaleForStickerSprite(sprite));
+
 		renderStickerQuad(spriteConsumer, stack, light);
 
 		stack.pop();
 	}
 
-	public static void setupStickerRenderState(Vec3d position, Direction side, MatrixStack stack, float rotation) {
+	public static void setupStickerRenderState(Vec3d position, Direction side, MatrixStack stack, float rotation, float scale) {
 		stack.translate(position);
 		stack.multiply(new Quaternionf().rotationAxis(rotation, side.getFloatVector()));
 		stack.multiply(side.getRotationQuaternion());
 		stack.multiply(new Quaternionf().rotationX((float) Math.PI * 0.5f));
 		stack.translate(-0.5f, -0.5f, -0.501f);
+
+		float inverseScale = Math.clamp(1 - scale, 0, 1);
+		stack.translate(0.5f * inverseScale, 0.5f * inverseScale, 0);
+
+		stack.scale(scale, scale, scale);
 	}
 
 	public static void renderStickerQuad(VertexConsumer consumer, MatrixStack stack, int light) {
