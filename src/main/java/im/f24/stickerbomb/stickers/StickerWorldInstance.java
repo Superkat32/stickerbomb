@@ -2,11 +2,14 @@ package im.f24.stickerbomb.stickers;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import im.f24.stickerbomb.items.StickerItem;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Uuids;
 import net.minecraft.util.math.*;
+import net.minecraft.world.World;
 
 import java.util.UUID;
 
@@ -88,5 +91,21 @@ public class StickerWorldInstance {
 
 	public ChunkPos getChunkPos() {
 		return new ChunkPos(blockPos);
+	}
+
+
+	public ItemEntity createItemEntity(World world) {
+		var pos = position.add(side.getDoubleVector().multiply(0.5f));
+		var entity = new ItemEntity(world, pos.x, pos.y, pos.z, StickerItem.stackWithId(stickerTextureId));
+		entity.setVelocity(side.getDoubleVector().multiply(0.3f));
+		return entity;
+	}
+
+	public static boolean isBlockPlacementValid(BlockPos onBlockPos, Direction side, World world) {
+		var onBlock = world.getBlockState(onBlockPos);
+		var inBlock = world.getBlockState(onBlockPos.offset(side));
+
+		return onBlock.isSideSolidFullSquare(world, onBlockPos, side) &&
+			!inBlock.isSolidBlock(world, onBlockPos.offset(side));
 	}
 }

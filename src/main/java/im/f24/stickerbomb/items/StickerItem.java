@@ -29,6 +29,9 @@ public class StickerItem extends Item {
 
 		var world = (ServerWorld) context.getWorld();
 
+		if (!StickerWorldInstance.isBlockPlacementValid(context.getBlockPos(), context.getSide(), world))
+			return ActionResult.FAIL;
+
 		var id = context.getStack().getOrDefault(StickerBombMod.STICKER_ID, Identifier.of(StickerBombMod.ID, "test"));
 		var stickerInstance = new StickerWorldInstance(id);
 		stickerInstance.setPosition(context.getHitPos().subtract(context.getSide().getDoubleVector().multiply(0.5f)));
@@ -44,5 +47,11 @@ public class StickerItem extends Item {
 	public void appendTooltip(ItemStack stack, TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> textConsumer, TooltipType type) {
 		var id = stack.get(StickerBombMod.STICKER_ID);
 		textConsumer.accept(Text.translatable("item.stickerbomb.sticker.id", id).formatted(Formatting.DARK_GRAY));
+	}
+
+	public static ItemStack stackWithId(Identifier id) {
+		var stack = new ItemStack(StickerBombMod.STICKER_ITEM);
+		stack.set(StickerBombMod.STICKER_ID, id);
+		return stack;
 	}
 }

@@ -14,10 +14,10 @@ public class StickerScraper extends Item {
 	@Override
 	public ActionResult useOnBlock(ItemUsageContext context) {
 		var world = context.getWorld();
-		if(world.isClient)
+		if (world.isClient)
 			return ActionResult.SUCCESS;
 
-		StickerWorldManager.removeStickers((ServerWorld) world, context.getBlockPos(), context.getSide());
+		StickerWorldManager.removeStickers((ServerWorld) world, context.getBlockPos(), context.getSide(), removed -> world.spawnEntity(removed.createItemEntity(world)));
 		return super.useOnBlock(context);
 	}
 }

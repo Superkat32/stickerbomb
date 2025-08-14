@@ -3,25 +3,31 @@ package im.f24.stickerbomb.stickers.components;
 import im.f24.stickerbomb.StickerBombMod;
 import im.f24.stickerbomb.stickers.StickerWorldInstance;
 import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class StickerChunkComponent implements AutoSyncedComponent, ServerTickingComponent {
 	private static final ComponentKey<StickerChunkComponent> COMPONENT_KEY = StickerBombMod.STICKER_CHUNK_COMPONENT_COMPONENT_KEY;
+	public static final Random random = new Random();
 
 	public final Chunk chunk;
 	public final ArrayList<StickerWorldInstance> stickers = new ArrayList<>();
 
+	public int timer = 0;
+
 	public StickerChunkComponent(Chunk c) {
 		this.chunk = c;
+		timer = random.nextInt(40);
 	}
 
 
@@ -97,7 +103,7 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 	public void readData(ReadView readView) {
 		this.stickers.clear();
 		var opt = readView.read("stickers", StickerWorldInstance.CODEC.listOf());
-		if(opt.isEmpty())
+		if (opt.isEmpty())
 			return;
 		this.stickers.addAll(opt.get());
 	}
@@ -111,5 +117,24 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 
 	@Override
 	public void serverTick() {
+		timer++;
+		if (timer <= 40) return;
+		timer = 0;
+
+		if (!(this.chunk instanceof WorldChunk worldChunk))
+			return;
+
+		var world = worldChunk.getWorld();
+
+		// Check up to 100 random stickers for block attachment.
+		for (int i = 0; i < Math.min(stickers.size(), 100); i++) {
+			StickerWorldInstance sticker = stickers.get(random.nextInt(stickers.size()));
+
+			if (StickerWorldInstance.isBlockPlacementValid(sticker.blockPos, sticker.side, world))
+				continue;
+
+			removeSticker(sticker);
+			world.spawnEntity(sticker.createItemEntity(world));
+		}
 	}
 }

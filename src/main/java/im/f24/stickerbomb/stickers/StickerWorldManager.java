@@ -17,6 +17,7 @@ import org.ladysnake.cca.api.v3.component.ComponentKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class StickerWorldManager {
 	private static final ComponentKey<StickerChunkComponent> COMPONENT_KEY = StickerBombMod.STICKER_CHUNK_COMPONENT_COMPONENT_KEY;
@@ -49,12 +50,16 @@ public class StickerWorldManager {
 		component.removeSticker(sticker);
 	}
 
-	public static void removeStickers(ServerWorld world, BlockPos pos, Direction side) {
+	public static void removeStickers(ServerWorld world, BlockPos pos, Direction side, Consumer<StickerWorldInstance> removedConsumer) {
+		STICKER_CACHE.clear();
 		findStickers(world, new ChunkPos(pos), STICKER_CACHE);
 
-		for (StickerWorldInstance sticker : STICKER_CACHE)
-			if (sticker.blockPos.equals(pos) && sticker.side.equals(side))
+		for (StickerWorldInstance sticker : STICKER_CACHE) {
+			if (sticker.blockPos.equals(pos) && sticker.side.equals(side)) {
 				removeSticker(world, sticker);
+				removedConsumer.accept(sticker);
+			}
+		}
 	}
 
 	/// Finds all the stickers within a given chunk and populates a list with them.
