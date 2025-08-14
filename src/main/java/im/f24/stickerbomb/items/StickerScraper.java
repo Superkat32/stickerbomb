@@ -17,7 +17,17 @@ public class StickerScraper extends Item {
 		if (world.isClient)
 			return ActionResult.SUCCESS;
 
-		StickerWorldManager.removeStickers((ServerWorld) world, context.getBlockPos(), context.getSide(), removed -> world.spawnEntity(removed.createItemEntity(world)));
+		StickerWorldManager.removeStickers(
+			(ServerWorld) world,
+			context.getBlockPos(),
+			context.getSide(),
+			context.getPlayer().isInCreativeMode(),
+			removed -> {
+				if (removed.isTemporary())
+					return;
+				world.spawnEntity(removed.createItemEntity(world));
+			}
+		);
 		return super.useOnBlock(context);
 	}
 }

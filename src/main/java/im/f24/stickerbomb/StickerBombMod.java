@@ -24,17 +24,8 @@ public class StickerBombMod implements ModInitializer {
 
 	public static final int STICKER_PIXELS_PER_BLOCK = 32;
 
-	public static final Identifier STICKER_ITEM_ID = Identifier.of(ID, "sticker");
 	public static Item STICKER_ITEM;
-
-	public static final Identifier STICKER_SCRAPER_ID = Identifier.of(ID, "scraper");
 	public static Item STICKER_SCRAPER_ITEM;
-
-	public static ComponentType<Identifier> STICKER_ID = Registry.register(
-		Registries.DATA_COMPONENT_TYPE,
-		Identifier.of(ID, "sticker_id"),
-		ComponentType.<Identifier>builder().codec(Identifier.CODEC).build()
-	);
 
 	public static final ComponentKey<StickerChunkComponent> STICKER_CHUNK_COMPONENT_COMPONENT_KEY = ComponentRegistry.getOrCreate(
 		Identifier.of(ID, "sticker_chunk_data"),
@@ -42,18 +33,17 @@ public class StickerBombMod implements ModInitializer {
 	);
 
 
-
 	@Override
 	public void onInitialize() {
 		STICKER_ITEM = registerItem(
-			STICKER_ITEM_ID,
+			Identifier.of(ID, "sticker"),
 			StickerItem::new,
 			new Item.Settings()
-				.component(STICKER_ID, Identifier.of(ID, "test"))
+				.component(StickerItem.STICKER_DATA_COMPONENT, StickerItem.StickerItemData.DEFAULT)
 		);
 
 		STICKER_SCRAPER_ITEM = registerItem(
-			STICKER_SCRAPER_ID,
+			Identifier.of(ID, "scraper"),
 			StickerScraper::new,
 			new Item.Settings()
 		);

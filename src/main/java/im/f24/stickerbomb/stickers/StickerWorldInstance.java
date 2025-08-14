@@ -23,7 +23,10 @@ public class StickerWorldInstance {
 				Vec3d.CODEC.fieldOf("position").forGetter(s -> s.position),
 				Codec.FLOAT.fieldOf("rotation").forGetter(s -> s.rotation),
 				Codec.FLOAT.fieldOf("scale").forGetter(s -> s.scale),
-				Direction.CODEC.fieldOf("side").forGetter(s -> s.side)
+				Direction.CODEC.fieldOf("side").forGetter(s -> s.side),
+				Codec.BOOL.fieldOf("admin").forGetter(s -> s.isAdminSticker),
+				Uuids.INT_STREAM_CODEC.fieldOf("creator").forGetter(s -> s.creator),
+				Codec.BOOL.fieldOf("temporary").forGetter(s -> s.temporaryTimer >= 0)
 			).apply(instance, StickerWorldInstance::new)
 	);
 
@@ -36,7 +39,10 @@ public class StickerWorldInstance {
 				Vec3d.PACKET_CODEC.decode(buf),
 				buf.readFloat(),
 				buf.readFloat(),
-				Direction.PACKET_CODEC.decode(buf)
+				Direction.PACKET_CODEC.decode(buf),
+				buf.readBoolean(),
+				Uuids.PACKET_CODEC.decode(buf),
+				buf.readBoolean()
 			);
 		}
 
@@ -48,6 +54,9 @@ public class StickerWorldInstance {
 			buf.writeFloat(value.rotation);
 			buf.writeFloat(value.scale);
 			Direction.PACKET_CODEC.encode(buf, value.side);
+			buf.writeBoolean(value.isAdminSticker);
+			Uuids.PACKET_CODEC.encode(buf, value.creator);
+			buf.writeBoolean(value.temporaryTimer >= 0);
 		}
 	};
 
@@ -58,6 +67,10 @@ public class StickerWorldInstance {
 	public float scale;
 	public Direction side;
 
+	public boolean isAdminSticker;
+	public UUID creator;
+	public int temporaryTimer;
+
 	public BlockPos blockPos;
 	public Box stickerBox;
 
@@ -67,16 +80,22 @@ public class StickerWorldInstance {
 		rotation = 0;
 		scale = 1;
 		side = Direction.NORTH;
+		isAdminSticker = false;
+		temporaryTimer = -1;
 
 		setPosition(Vec3d.ZERO);
 	}
 
-	private StickerWorldInstance(UUID id, Identifier stickerTextureId, Vec3d position, float rotation, float scale, Direction side) {
+	private StickerWorldInstance(UUID id, Identifier stickerTextureId, Vec3d position, float rotation, float scale, Direction side, boolean isAdminSticker, UUID creator, boolean isTemporary) {
 		this.id = id;
 		this.stickerTextureId = stickerTextureId;
 		this.rotation = rotation;
 		this.scale = scale;
 		this.side = side;
+		this.isAdminSticker = isAdminSticker;
+		this.creator = creator;
+
+		this.temporaryTimer = isTemporary ? 600 : -1;
 
 		setPosition(position);
 	}
@@ -93,12 +112,15 @@ public class StickerWorldInstance {
 		return new ChunkPos(blockPos);
 	}
 
-
 	public ItemEntity createItemEntity(World world) {
 		var pos = position.add(side.getDoubleVector().multiply(0.5f));
-		var entity = new ItemEntity(world, pos.x, pos.y, pos.z, StickerItem.stackWithId(stickerTextureId));
+		var entity = new ItemEntity(world, pos.x, pos.y, pos.z, StickerItem.stackWithData(new StickerItem.StickerItemData(stickerTextureId, isAdminSticker, temporaryTimer >= 0)));
 		entity.setVelocity(side.getDoubleVector().multiply(0.3f));
 		return entity;
+	}
+
+	public boolean isTemporary() {
+		return temporaryTimer >= 0;
 	}
 
 	public static boolean isBlockPlacementValid(BlockPos onBlockPos, Direction side, World world) {

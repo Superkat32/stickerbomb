@@ -7,6 +7,7 @@ import im.f24.stickerbomb.items.StickerItem;
 import im.f24.stickerbomb.stickers.StickerWorldInstance;
 import im.f24.stickerbomb.stickers.StickerWorldManager;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.chunk.ChunkBuilder;
@@ -14,6 +15,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Colors;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -31,13 +33,36 @@ public class StickerRenderer {
 		var world = worldRenderContext.world();
 		var camera = worldRenderContext.camera();
 		var frustum = worldRenderContext.frustum();
-		var builtChunks = worldRenderer.getBuiltChunks();
 		var stack = worldRenderContext.matrixStack();
 
 		STICKER_CACHE.clear();
 
-		for (ChunkBuilder.BuiltChunk builtChunk : builtChunks) {
-			StickerWorldManager.findStickers(world, ChunkSectionPos.from(builtChunk.getSectionPos()), STICKER_CACHE);
+		if (FabricLoader.getInstance().isModLoaded("sodium")) {
+			//TODO - See if we can optimize this?..
+			var renderDistance = (int) worldRenderer.getViewDistance();
+
+			for (var x = -renderDistance; x <= renderDistance; x++) {
+				for (var z = -renderDistance; z <= renderDistance; z++) {
+					var chunk = world.getChunk(x, z);
+
+					for (var y = 0; y < world.countVerticalSections(); y++) {
+						var sectionBox = Box.enclosing(
+							chunk.getPos().getBlockPos(0, y * 16, 0),
+							chunk.getPos().getBlockPos(16, (y + 1) * 16, 16)
+						);
+
+						if (!frustum.isVisible(sectionBox))
+							continue;
+
+						StickerWorldManager.findStickers(world, ChunkSectionPos.from(chunk.getPos(), y), STICKER_CACHE);
+					}
+				}
+			}
+		} else {
+			var builtChunks = worldRenderer.getBuiltChunks();
+			for (ChunkBuilder.BuiltChunk builtChunk : builtChunks) {
+				StickerWorldManager.findStickers(world, ChunkSectionPos.from(builtChunk.getSectionPos()), STICKER_CACHE);
+			}
 		}
 
 		// Remove invisible stickers
@@ -71,14 +96,15 @@ public class StickerRenderer {
 
 				stack.push();
 
-				var stickerID = item.get(StickerBombMod.STICKER_ID);
-				var sprite = StickerAtlasHolder.INSTANCE.getSticker(stickerID);
+				var stickerData = item.get(StickerItem.STICKER_DATA_COMPONENT);
+				var sprite = StickerAtlasHolder.INSTANCE.getSticker(stickerData.id());
 				var spriteConsumer = sprite.getTextureSpecificVertexConsumer(consumer);
 				var scale = StickerAtlasHolder.INSTANCE.getScaleForStickerSprite(sprite);
 
-
 				setupStickerRenderState(pos.subtract(camera.getPos()), blockHitResult.getSide(), stack, rotation, scale);
+				stack.translate(0, 0, -0.1f);
 				renderStickerQuad(spriteConsumer, stack, LightmapTextureManager.MAX_LIGHT_COORDINATE);
+
 				stack.pop();
 			}
 		}
@@ -104,6 +130,9 @@ public class StickerRenderer {
 
 		setupStickerRenderState(sticker.position.subtract(camera.getPos()), sticker.side, stack, sticker.rotation, StickerAtlasHolder.INSTANCE.getScaleForStickerSprite(sprite));
 
+		float idRandom = (sticker.id.getLeastSignificantBits() % 2000) / (float) 2000;
+		stack.translate(0, 0, 0.01f * (idRandom - 0.5f));
+
 		renderStickerQuad(spriteConsumer, stack, light);
 
 		stack.pop();
@@ -114,7 +143,7 @@ public class StickerRenderer {
 		stack.multiply(new Quaternionf().rotationAxis(rotation, side.getFloatVector()));
 		stack.multiply(side.getRotationQuaternion());
 		stack.multiply(new Quaternionf().rotationX((float) Math.PI * 0.5f));
-		stack.translate(-0.5f, -0.5f, -0.501f);
+		stack.translate(-0.5f, -0.5f, -0.51f);
 
 		float inverseScale = Math.clamp(1 - scale, 0, 1);
 		stack.translate(0.5f * inverseScale, 0.5f * inverseScale, 0);

@@ -1,6 +1,8 @@
 {
 	"item.stickerbomb.sticker" : "Sticker",
 	"item.stickerbomb.sticker.id": "ID: %1$s",
+	"item.stickerbomb.sticker.temporary": "Temporary Sticker",
+	"item.stickerbomb.sticker.admin": "ADMIN STICKER",
 
 	"item.stickerbomb.scraper" : "Sticker Scraper"
 }

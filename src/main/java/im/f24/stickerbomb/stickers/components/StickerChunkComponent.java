@@ -4,7 +4,6 @@ import im.f24.stickerbomb.StickerBombMod;
 import im.f24.stickerbomb.stickers.StickerWorldInstance;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.world.chunk.Chunk;
@@ -22,6 +21,7 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 
 	public final Chunk chunk;
 	public final ArrayList<StickerWorldInstance> stickers = new ArrayList<>();
+	public final ArrayList<StickerWorldInstance> tickStickers = new ArrayList<>();
 
 	public int timer = 0;
 
@@ -41,6 +41,9 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 			StickerWorldInstance.PACKET_CODEC.encode(buf, sticker);
 		});
 		this.chunk.markNeedsSaving();
+
+		if (sticker.isTemporary())
+			tickStickers.add(sticker);
 	}
 
 	/// Synced event, removes a sticker.
@@ -49,6 +52,7 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 		// If no sticker was found, do nothing.
 		if (!stickers.removeIf(s -> s.id.equals(sticker.id)))
 			return;
+		tickStickers.removeIf(s -> s.id.equals(sticker.id));
 
 		this.chunk.markNeedsSaving();
 		COMPONENT_KEY.sync(this.chunk, (buf, rec) -> {
@@ -73,19 +77,26 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 				// Sync entire sticker list.
 				var collection = buf.readCollection(ArrayList::new, StickerWorldInstance.PACKET_CODEC);
 				this.stickers.clear();
-				this.stickers.addAll(collection);
+				for (StickerWorldInstance sticker : collection) {
+					stickers.add(sticker);
+					if (sticker.isTemporary())
+						tickStickers.add(sticker);
+				}
 				break;
 			}
 			case 1: {
 				// Add single sticker
 				var sticker = StickerWorldInstance.PACKET_CODEC.decode(buf);
 				this.stickers.add(sticker);
+				if (sticker.isTemporary())
+					tickStickers.add(sticker);
 				break;
 			}
 			case 2: {
 				// Remove single sticker
 				var id = buf.readUuid();
 				this.stickers.removeIf(s -> s.id.equals(id));
+				this.tickStickers.removeIf(s -> s.id.equals(id));
 				break;
 			}
 			case 3: {
@@ -105,7 +116,11 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 		var opt = readView.read("stickers", StickerWorldInstance.CODEC.listOf());
 		if (opt.isEmpty())
 			return;
-		this.stickers.addAll(opt.get());
+		for (StickerWorldInstance sticker : opt.get()) {
+			stickers.add(sticker);
+			if (sticker.isTemporary())
+				tickStickers.add(sticker);
+		}
 	}
 
 	@Override
@@ -117,24 +132,43 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 
 	@Override
 	public void serverTick() {
-		timer++;
-		if (timer <= 40) return;
-		timer = 0;
 
-		if (!(this.chunk instanceof WorldChunk worldChunk))
-			return;
+		// Tick temporary stickers.
+		for (int i = tickStickers.size() - 1; i >= 0; i--) {
+			var sticker = tickStickers.get(i);
 
-		var world = worldChunk.getWorld();
+			sticker.temporaryTimer--;
+			if (sticker.temporaryTimer <= 0)
+				removeSticker(sticker);
+		}
 
-		// Check up to 100 random stickers for block attachment.
-		for (int i = 0; i < Math.min(stickers.size(), 100); i++) {
-			StickerWorldInstance sticker = stickers.get(random.nextInt(stickers.size()));
+		// Tick stickers for popping
+		{
+			timer++;
+			if (timer <= 40) return;
+			timer = 0;
 
-			if (StickerWorldInstance.isBlockPlacementValid(sticker.blockPos, sticker.side, world))
-				continue;
+			if (!(this.chunk instanceof WorldChunk worldChunk))
+				return;
 
-			removeSticker(sticker);
-			world.spawnEntity(sticker.createItemEntity(world));
+			var world = worldChunk.getWorld();
+
+			// Check up to 100 random stickers for block attachment.
+			for (int i = 0; i < Math.min(stickers.size(), 100); i++) {
+				StickerWorldInstance sticker = stickers.get(random.nextInt(stickers.size()));
+
+				// Ignore admin stickers, we don't want them to pop off no matter what.
+				if (sticker.isAdminSticker)
+					continue;
+
+				if (StickerWorldInstance.isBlockPlacementValid(sticker.blockPos, sticker.side, world))
+					continue;
+
+				removeSticker(sticker);
+
+				if (!sticker.isTemporary())
+					world.spawnEntity(sticker.createItemEntity(world));
+			}
 		}
 	}
 }

@@ -50,11 +50,14 @@ public class StickerWorldManager {
 		component.removeSticker(sticker);
 	}
 
-	public static void removeStickers(ServerWorld world, BlockPos pos, Direction side, Consumer<StickerWorldInstance> removedConsumer) {
+	public static void removeStickers(ServerWorld world, BlockPos pos, Direction side, boolean hasAdmin, Consumer<StickerWorldInstance> removedConsumer) {
 		STICKER_CACHE.clear();
 		findStickers(world, new ChunkPos(pos), STICKER_CACHE);
 
 		for (StickerWorldInstance sticker : STICKER_CACHE) {
+			if (!hasAdmin && sticker.isAdminSticker)
+				continue;
+
 			if (sticker.blockPos.equals(pos) && sticker.side.equals(side)) {
 				removeSticker(world, sticker);
 				removedConsumer.accept(sticker);
