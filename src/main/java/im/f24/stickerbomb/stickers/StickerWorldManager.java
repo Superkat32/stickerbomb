@@ -9,9 +9,7 @@ import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -21,8 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class StickerWorldManager {
-	private static final HashMap<Chunk, List<StickerWorldInstance>> STICKER_DATA = new HashMap<>();
 	private static final ComponentKey<StickerChunkComponent> COMPONENT_KEY = StickerBombMod.STICKER_CHUNK_COMPONENT_COMPONENT_KEY;
+	private static final List<StickerWorldInstance> STICKER_CACHE = new ArrayList<>();
 
 	// Sticker Management //
 
@@ -49,6 +47,14 @@ public class StickerWorldManager {
 			return;
 
 		component.removeSticker(sticker);
+	}
+
+	public static void removeStickers(ServerWorld world, BlockPos pos, Direction side) {
+		findStickers(world, new ChunkPos(pos), STICKER_CACHE);
+
+		for (StickerWorldInstance sticker : STICKER_CACHE)
+			if (sticker.blockPos.equals(pos) && sticker.side.equals(side))
+				removeSticker(world, sticker);
 	}
 
 	/// Finds all the stickers within a given chunk and populates a list with them.

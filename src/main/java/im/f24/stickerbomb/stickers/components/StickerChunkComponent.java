@@ -34,6 +34,7 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 			buf.writeVarInt(1);
 			StickerWorldInstance.PACKET_CODEC.encode(buf, sticker);
 		});
+		this.chunk.markNeedsSaving();
 	}
 
 	/// Synced event, removes a sticker.
@@ -43,6 +44,7 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 		if (!stickers.removeIf(s -> s.id.equals(sticker.id)))
 			return;
 
+		this.chunk.markNeedsSaving();
 		COMPONENT_KEY.sync(this.chunk, (buf, rec) -> {
 			// Write single sticker remove.
 			buf.writeVarInt(2);
@@ -59,22 +61,30 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 
 	@Override
 	public void applySyncPacket(RegistryByteBuf buf) {
-		switch (buf.readVarInt()) {
+		var mode = buf.readVarInt();
+		switch (mode) {
 			case 0: {
 				// Sync entire sticker list.
 				var collection = buf.readCollection(ArrayList::new, StickerWorldInstance.PACKET_CODEC);
 				this.stickers.clear();
 				this.stickers.addAll(collection);
+				break;
 			}
 			case 1: {
 				// Add single sticker
 				var sticker = StickerWorldInstance.PACKET_CODEC.decode(buf);
 				this.stickers.add(sticker);
+				break;
 			}
 			case 2: {
 				// Remove single sticker
 				var id = buf.readUuid();
 				this.stickers.removeIf(s -> s.id.equals(id));
+				break;
+			}
+			case 3: {
+				// Ignore.
+				break;
 			}
 
 			default: {
@@ -85,16 +95,21 @@ public class StickerChunkComponent implements AutoSyncedComponent, ServerTicking
 
 	@Override
 	public void readData(ReadView readView) {
-
+		this.stickers.clear();
+		var opt = readView.read("stickers", StickerWorldInstance.CODEC.listOf());
+		if(opt.isEmpty())
+			return;
+		this.stickers.addAll(opt.get());
 	}
 
 	@Override
 	public void writeData(WriteView writeView) {
-
+		if (this.stickers.isEmpty())
+			return;
+		writeView.put("stickers", StickerWorldInstance.CODEC.listOf(), this.stickers);
 	}
 
 	@Override
 	public void serverTick() {
-
 	}
 }

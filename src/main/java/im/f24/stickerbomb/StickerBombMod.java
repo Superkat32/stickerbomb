@@ -1,11 +1,14 @@
 package im.f24.stickerbomb;
 
 import im.f24.stickerbomb.items.StickerItem;
+import im.f24.stickerbomb.items.StickerScraper;
 import im.f24.stickerbomb.stickers.components.StickerChunkComponent;
 import im.f24.stickerbomb.stickers.StickerWorldManager;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.component.ComponentType;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -27,6 +30,9 @@ public class StickerBombMod implements ModInitializer {
 	public static final Identifier STICKER_ITEM_ID = Identifier.of(ID, "sticker");
 	public static Item STICKER_ITEM;
 
+	public static final Identifier STICKER_SCRAPER_ID = Identifier.of(ID, "scraper");
+	public static Item STICKER_SCRAPER_ITEM;
+
 	public static ComponentType<Identifier> STICKER_ID = Registry.register(
 		Registries.DATA_COMPONENT_TYPE,
 		Identifier.of(ID, "sticker_id"),
@@ -45,6 +51,12 @@ public class StickerBombMod implements ModInitializer {
 			StickerItem::new,
 			new Item.Settings()
 				.component(STICKER_ID, Identifier.of(ID, "test"))
+		);
+
+		STICKER_SCRAPER_ITEM = registerItem(
+			STICKER_SCRAPER_ID,
+			StickerScraper::new,
+			new Item.Settings()
 		);
 	}
 
