@@ -3,6 +3,7 @@ package im.f24.stickerbomb.client;
 import im.f24.stickerbomb.StickerBombMod;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.texture.MissingSprite;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.SpriteAtlasHolder;
 import net.minecraft.client.texture.TextureManager;
@@ -28,6 +29,13 @@ public class StickerAtlasHolder extends SpriteAtlasHolder {
 
 	public Sprite getSticker(Identifier id) {
 		return getSprite(id);
+	}
+
+	public boolean hasSticker(Identifier id) {
+		var result = getSticker(id);
+		var missingSprite = getSticker(Identifier.of(""));
+		var isMissing = result == missingSprite;
+		return !isMissing;
 	}
 
 

@@ -4,5 +4,12 @@
 	"item.stickerbomb.sticker.temporary": "Temporary Sticker",
 	"item.stickerbomb.sticker.admin": "ADMIN STICKER",
 
-	"item.stickerbomb.scraper" : "Sticker Scraper"
+	"item.stickerbomb.scraper" : "Sticker Scraper",
+	"item.stickerbomb.blank_sticker" : "Blank Sticker",
+
+	"item.stickerbomb.printer" : "Sticker Printer",
+
+	"screen.stickerbomb.printer" : "Sticker Printer",
+	"screen.stickerbomb.printer.id" : "Sticker ID"
+
 }

@@ -1,6 +1,6 @@
 {
 	"parent": "minecraft:item/generated",
 	"textures" : {
-		"layer0" : "stickerbomb:item/sticker"
+		"layer0" : "stickerbomb:item/scraper"
 	}
 }

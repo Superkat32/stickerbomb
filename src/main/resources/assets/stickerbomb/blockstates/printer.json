@@ -1,0 +1,19 @@
+{
+	"variants": {
+		"facing=east": {
+			"model": "stickerbomb:block/printer"
+		},
+		"facing=south": {
+			"model": "stickerbomb:block/printer",
+			"y" : 90
+		},
+		"facing=west": {
+			"model": "stickerbomb:block/printer",
+			"y" : 180
+		},
+		"facing=north": {
+			"model": "stickerbomb:block/printer",
+			"y" : 270
+		}
+	}
+}

@@ -102,7 +102,7 @@ public class StickerRenderer {
 				var scale = StickerAtlasHolder.INSTANCE.getScaleForStickerSprite(sprite);
 
 				setupStickerRenderState(pos.subtract(camera.getPos()), blockHitResult.getSide(), stack, rotation, scale);
-				stack.translate(0, 0, -0.1f);
+				stack.translate(0, 0, -0.0f);
 				renderStickerQuad(spriteConsumer, stack, LightmapTextureManager.MAX_LIGHT_COORDINATE);
 
 				stack.pop();
