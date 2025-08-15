@@ -17,7 +17,6 @@ public class StickerAtlasHolder extends SpriteAtlasHolder {
 	@NotNull
 	public static StickerAtlasHolder INSTANCE = null;
 
-
 	public StickerAtlasHolder(TextureManager textureManager) {
 		super(
 			textureManager,
@@ -36,11 +35,6 @@ public class StickerAtlasHolder extends SpriteAtlasHolder {
 		var missingSprite = getSticker(Identifier.of(""));
 		var isMissing = result == missingSprite;
 		return !isMissing;
-	}
-
-
-	public float getScaleForStickerSprite(Identifier id) {
-		return getScaleForStickerSprite(getSticker(id));
 	}
 
 	public float getScaleForStickerSprite(Sprite sprite) {

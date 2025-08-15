@@ -1,8 +1,12 @@
 {
 	"item.stickerbomb.sticker" : "Sticker",
+	"item.stickerbomb.sticker.special": "\"%1$s\" Sticker",
 	"item.stickerbomb.sticker.id": "ID: %1$s",
 	"item.stickerbomb.sticker.temporary": "Temporary Sticker",
 	"item.stickerbomb.sticker.admin": "ADMIN STICKER",
+
+	"sticker.stickerbomb.test" : "Test",
+	"sticker.stickerbomb.diamond" : "Diamond",
 
 	"item.stickerbomb.scraper" : "Sticker Scraper",
 	"item.stickerbomb.blank_sticker" : "Blank Sticker",

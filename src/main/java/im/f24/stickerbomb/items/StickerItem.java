@@ -68,6 +68,14 @@ public class StickerItem extends Item {
 			textConsumer.accept(Text.translatable("item.stickerbomb.sticker.admin").formatted(Formatting.BOLD, Formatting.ITALIC, Formatting.GOLD));
 	}
 
+	@Override
+	public Text getName(ItemStack stack) {
+		var data = stack.getOrDefault(STICKER_DATA_COMPONENT, StickerItemData.DEFAULT);
+		var translationKey = String.format("sticker.%s", data.id.toTranslationKey());
+		var text = Text.translatable(translationKey);
+		return Text.translatable("item.stickerbomb.sticker.special", text);
+	}
+
 	public static ItemStack stackWithData(StickerItemData data) {
 		var stack = new ItemStack(StickerBombMod.STICKER_ITEM);
 		stack.set(STICKER_DATA_COMPONENT, data);

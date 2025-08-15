@@ -1,6 +1,7 @@
 package im.f24.stickerbomb.screen;
 
 import im.f24.stickerbomb.StickerBombMod;
+import im.f24.stickerbomb.blocks.StickerPrinterBlock;
 import im.f24.stickerbomb.client.StickerAtlasHolder;
 import im.f24.stickerbomb.items.StickerItem;
 import im.f24.stickerbomb.network.PrinterScreenProvideIDC2SPayload;
@@ -18,6 +19,8 @@ import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.util.Optional;
 
@@ -83,7 +86,12 @@ public class PrinterScreenHandler extends ScreenHandler {
 			return;
 
 		var stack = new ItemStack(StickerBombMod.STICKER_ITEM, 1);
-		stack.set(StickerItem.STICKER_DATA_COMPONENT, new StickerItem.StickerItemData(current_id.get(), false, false));
+		var isTemp = false;
+
+		if (context.get(PrinterScreenHandler::isBlockTempset).orElse(false))
+			isTemp = true;
+
+		stack.set(StickerItem.STICKER_DATA_COMPONENT, new StickerItem.StickerItemData(current_id.get(), false, isTemp));
 
 		craftingResultInventory.setStack(0, stack);
 		setReceivedStack(0, stack);
@@ -124,6 +132,11 @@ public class PrinterScreenHandler extends ScreenHandler {
 		onContentChanged(this.craftingInventory);
 	}
 
+	private static boolean isBlockTempset(World world, BlockPos pos) {
+		var blockState = world.getBlockState(pos);
+
+		return blockState.get(StickerPrinterBlock.TEMPORARY, false);
+	}
 
 	public class ResultSlot extends Slot {
 

@@ -23,7 +23,7 @@ public class PrinterScreen extends HandledScreen<PrinterScreenHandler> {
 	protected void init() {
 		super.init();
 
-		idBar = new TextFieldWidget(this.textRenderer, x, y, 81, 14, Text.translatable("screen.stickerbomb.printer.id"));
+		idBar = new TextFieldWidget(this.textRenderer, x + 4, y + 36, 81, 14, Text.translatable("screen.stickerbomb.printer.id"));
 		idBar.setChangedListener(handler::setStickerId);
 		addDrawableChild(idBar);
 	}
