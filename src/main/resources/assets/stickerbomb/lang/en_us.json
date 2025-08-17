@@ -7,6 +7,9 @@
 
 	"sticker.stickerbomb.test" : "Test",
 	"sticker.stickerbomb.diamond" : "Diamond",
+	"sticker.stickerbomb.tto_board" : "Tic Tac Toe Board",
+	"sticker.stickerbomb.tto_o" : "Tic Tac Toe O",
+	"sticker.stickerbomb.tto_x" : "Tic Tac Toe X",
 
 	"item.stickerbomb.scraper" : "Sticker Scraper",
 	"item.stickerbomb.blank_sticker" : "Blank Sticker",

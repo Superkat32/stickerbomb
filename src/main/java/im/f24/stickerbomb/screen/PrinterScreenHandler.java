@@ -112,6 +112,9 @@ public class PrinterScreenHandler extends ScreenHandler {
 			return;
 		}
 
+		if(!content.contains(":"))
+			content = "stickerbomb:" + content;
+
 		this.current_id = Optional.ofNullable(Identifier.tryParse(content));
 
 		// Check if valid ID is provided.
