@@ -17,6 +17,7 @@ import org.ladysnake.cca.api.v3.component.ComponentKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class StickerWorldManager {
@@ -25,29 +26,31 @@ public class StickerWorldManager {
 
 	// Sticker Management //
 
-	private static StickerChunkComponent getComponent(World world, ChunkPos pos) {
+	private static Optional<StickerChunkComponent> getComponent(World world, ChunkPos pos) {
 		if (!world.isChunkLoaded(pos.x, pos.z))
-			return null;
+			return Optional.empty();
 
 		var chunk = world.getChunk(pos.x, pos.z);
-		return COMPONENT_KEY.get(chunk);
+		return COMPONENT_KEY.maybeGet(chunk);
 	}
 
 	/// Adds a sticker to a world.
 	public static void addSticker(ServerWorld world, StickerWorldInstance sticker) {
-		if (!(getComponent(world, sticker.getChunkPos()) instanceof StickerChunkComponent component))
+		var maybeComponent = getComponent(world, sticker.getChunkPos());
+		if (maybeComponent.isEmpty())
 			return;
 
-		component.addSticker(sticker);
+		maybeComponent.get().addSticker(sticker);
 	}
 
 	/// Removes a specific sticker from a world.
 	/// If the sticker is not present, this does nothing.
 	public static void removeSticker(ServerWorld world, StickerWorldInstance sticker) {
-		if (!(getComponent(world, sticker.getChunkPos()) instanceof StickerChunkComponent component))
+		var maybeComponent = getComponent(world, sticker.getChunkPos());
+		if (maybeComponent.isEmpty())
 			return;
 
-		component.removeSticker(sticker);
+		maybeComponent.get().removeSticker(sticker);
 	}
 
 	public static void removeStickers(ServerWorld world, BlockPos pos, Direction side, boolean hasAdmin, Consumer<StickerWorldInstance> removedConsumer) {
@@ -67,18 +70,20 @@ public class StickerWorldManager {
 
 	/// Finds all the stickers within a given chunk and populates a list with them.
 	public static void findStickers(World world, ChunkPos chunkPos, List<StickerWorldInstance> targetList) {
-		if (!(getComponent(world, chunkPos) instanceof StickerChunkComponent component))
+		var maybeComponent = getComponent(world, chunkPos);
+		if (maybeComponent.isEmpty())
 			return;
 
-		targetList.addAll(component.stickers);
+		targetList.addAll(maybeComponent.get().stickers);
 	}
 
 	/// Finds all the stickers within a given chunk and populates a list with them.
 	public static void findStickers(World world, ChunkSectionPos sectionPos, List<StickerWorldInstance> targetList) {
-		if (!(getComponent(world, sectionPos.toChunkPos()) instanceof StickerChunkComponent component))
+		var maybeComponent = getComponent(world, sectionPos.toChunkPos());
+		if (maybeComponent.isEmpty())
 			return;
 
-		for (StickerWorldInstance sticker : component.stickers)
+		for (StickerWorldInstance sticker : maybeComponent.get().stickers)
 			if (sticker.position.y >= sectionPos.getMinY() && sticker.position.y <= sectionPos.getMaxY())
 				targetList.add(sticker);
 	}
