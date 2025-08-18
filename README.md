@@ -1,19 +1,7 @@
-<!--suppress HtmlDeprecatedTag, XmlDeprecatedElement -->
-<center><img alt="mod preview" src="https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"/></center>
+# Stickerbomb!
+The minecraft mod that adds stickers!
 
-<center>
-A short quick summary of this mod
-</center>
+## Adding stickers
+By default, stickerbomb comes with a few stickers, but you can also add your own via resource packs (including the one bunbled in your mod)
 
----
-
-A long description of your mod, including 
-- Dot point lists of all features
-
-`path/to/config/files` if you have them
-
-Screenshots of features where possible
-
----
-
-A footnote for special thanks, credits, and other shoutouts - including "created at modfest" banners.
+Just place the texture files for your stickers at `assets/{namespace}/textures/sticker`, and stickerbomb will automatically load them up when resource packs load or reload.
