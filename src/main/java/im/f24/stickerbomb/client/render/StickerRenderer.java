@@ -40,12 +40,15 @@ public class StickerRenderer {
 		if (FabricLoader.getInstance().isModLoaded("sodium")) {
 			//TODO - See if we can optimize this?..
 			var renderDistance = (int) worldRenderer.getViewDistance();
+			var cameraChunk = ChunkSectionPos.from(camera.getBlockPos());
+			var cameraX = cameraChunk.getX();
+			var cameraZ = cameraChunk.getZ();
 
-			for (var x = -renderDistance; x <= renderDistance; x++) {
-				for (var z = -renderDistance; z <= renderDistance; z++) {
+			for (var x = cameraX - renderDistance; x <= cameraX + renderDistance; x++) {
+				for (var z = cameraZ - renderDistance; z <= cameraZ + renderDistance; z++) {
 					var chunk = world.getChunk(x, z);
 
-					for (var y = 0; y < world.countVerticalSections(); y++) {
+					for (var y = world.getBottomSectionCoord(); y < world.countVerticalSections(); y++) {
 						var sectionBox = Box.enclosing(
 							chunk.getPos().getBlockPos(0, y * 16, 0),
 							chunk.getPos().getBlockPos(16, (y + 1) * 16, 16)

@@ -4,6 +4,7 @@
   "package": "im.f24.stickerbomb.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ItemStackMixin"
   ],
   "client": [
     "MinecraftClientMixin"
