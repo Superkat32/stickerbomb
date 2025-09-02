@@ -7,6 +7,7 @@ import im.f24.stickerbomb.network.PrinterScreenProvideIDC2SPayload;
 import im.f24.stickerbomb.screen.PrinterScreenHandler;
 import im.f24.stickerbomb.stickers.components.StickerChunkComponent;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -16,6 +17,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -78,6 +80,15 @@ public class StickerBombMod implements ModInitializer {
 			AbstractBlock.Settings.create(),
 			true
 		);
+
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(group -> {
+			group.add(STICKER_PRINTER_BLOCK);
+		});
+
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(group -> {
+			group.add(BLANK_STICKER_ITEM);
+			group.add(STICKER_SCRAPER_ITEM);
+		});
 
 		PRINTER_SCREEN_HANDLER = Registry.register(Registries.SCREEN_HANDLER, Identifier.of(ID, "printer"),
 			new ScreenHandlerType<>(PrinterScreenHandler::new, FeatureFlags.VANILLA_FEATURES));
